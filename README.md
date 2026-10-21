@@ -16,25 +16,33 @@ A small, transparent **Windows 11 debloater** with a modern animated GUI. No dow
 - **Undo** for all registry and service tweaks (removed apps must be reinstalled from the Microsoft Store)
 - Full log of every action in `logs\`
 
-## Usage
+## Quick start (one command)
 
-1. Download the latest zip from the [Releases](../../releases) page and extract it.
-2. Double-click `Run.bat` (accept the admin prompt).
-3. On **Start here**, pick a profile (or browse the option pages yourself). Click any option to read its details.
-4. Open **Review and apply**, turn on **Dry run** if you want a preview, then click **Apply selected**.
-5. Restart Windows.
-
-Or from PowerShell:
+Open **PowerShell** (Start menu > type `PowerShell` > Enter) and paste:
 
 ```powershell
-# GUI
-.\WinSlim.ps1
-
-# No GUI: apply the recommended set (add -DryRun to preview)
-.\WinSlim.ps1 -NoGui
+irm https://raw.githubusercontent.com/YOUR-USERNAME/WinSlim/main/WinSlim.ps1 | iex
 ```
 
-If PowerShell blocks the script: `powershell -ExecutionPolicy Bypass -File .\WinSlim.ps1`
+Accept the administrator (UAC) prompt and the WinSlim window opens. Nothing is changed until you review your choices and click **Apply selected**.
+
+1. On **Start here**, pick a profile (or browse the option pages yourself). Click any option to read what it does, who should skip it, and its risk level.
+2. Open **Review and apply**, turn on **Dry run** if you want a preview, then click **Apply selected**.
+3. Restart Windows.
+
+> **Tip:** read the script first if you like: it is one readable file, [`WinSlim.ps1`](WinSlim.ps1). Never run an `irm | iex` command from a source you don't trust.
+
+### Other ways to run it
+
+```powershell
+# Preview only, no GUI, applies the recommended set as a dry run
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/YOUR-USERNAME/WinSlim/main/WinSlim.ps1))) -NoGui -DryRun
+
+# From a downloaded release: extract the zip, then double-click Run.bat, or:
+.\WinSlim.ps1
+```
+
+If PowerShell blocks a downloaded file: `powershell -ExecutionPolicy Bypass -File .\WinSlim.ps1`
 
 ## What is *not* touched
 

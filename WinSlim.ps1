@@ -10,36 +10,58 @@
     - Dry-run mode previews everything without changing anything
     - Registry and service tweaks can be undone; everything is logged to .\logs\
 
-.PARAMETER NoGui
-    Skip the GUI and apply all "recommended" items.
+.NOTES
+    Flags (read from $args):
+      -NoGui   Skip the GUI and apply all "recommended" items.
+      -DryRun  Only log what would be done (the GUI has its own toggle).
 
-.PARAMETER DryRun
-    Only log what would be done (applies to -NoGui; the GUI has a toggle).
+.EXAMPLE
+    irm https://raw.githubusercontent.com/YOUR-USERNAME/WinSlim/main/WinSlim.ps1 | iex
 
 .EXAMPLE
     .\WinSlim.ps1
     .\WinSlim.ps1 -NoGui -DryRun
 #>
-[CmdletBinding()]
-param(
-    [switch]$NoGui,
-    [switch]$DryRun
-)
+# NOTE: no param() block on purpose, so the script also works when piped into Invoke-Expression.
+# Flags are read from $args:  -NoGui  -DryRun
 
-$script:Version = '2.0.0'
+$script:Version = '2.1.0'
+# Raw URL of this file on GitHub (used when the script is launched with:  irm <url> | iex )
+$script:RawUrl  = 'https://raw.githubusercontent.com/YOUR-USERNAME/WinSlim/main/WinSlim.ps1'
 
-# ---------------------------------------------------------------- elevation
+$NoGui  = [bool]($args -contains '-NoGui')
+$DryRun = [bool]($args -contains '-DryRun')
+
+# ---------------------------------------------------------------- elevation / Windows PowerShell check
 $principal = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
-if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    $argList = "-NoProfile -ExecutionPolicy Bypass -STA -File `"$PSCommandPath`""
-    if ($NoGui)  { $argList += ' -NoGui' }
-    if ($DryRun) { $argList += ' -DryRun' }
-    if ($NoGui) {
-        Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList $argList
+$isAdmin   = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+$isDesktop = ($PSVersionTable.PSEdition -ne 'Core')   # WinSlim needs Windows PowerShell 5.1 (Appx cmdlets, WPF)
+
+if (-not $isAdmin -or -not $isDesktop) {
+    $flags = ''
+    if ($NoGui)  { $flags += ' -NoGui' }
+    if ($DryRun) { $flags += ' -DryRun' }
+
+    if ($PSCommandPath) {
+        # Started from a file on disk
+        $argList = "-NoProfile -ExecutionPolicy Bypass -STA -File `"$PSCommandPath`"$flags"
     } else {
-        Start-Process -FilePath 'powershell.exe' -Verb RunAs -WindowStyle Hidden -ArgumentList $argList
+        # Started with:  irm <url> | iex   -> fetch it again inside the elevated window
+        $cmd = "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; & ([scriptblock]::Create((irm '$($script:RawUrl)')))$flags"
+        $argList = "-NoProfile -ExecutionPolicy Bypass -STA -Command `"$cmd`""
     }
-    exit
+
+    Write-Host 'Starting WinSlim - accept the administrator (UAC) prompt...' -ForegroundColor Cyan
+    try {
+        if ($NoGui) {
+            Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList $argList -ErrorAction Stop
+        } else {
+            Start-Process -FilePath 'powershell.exe' -Verb RunAs -WindowStyle Hidden -ArgumentList $argList -ErrorAction Stop
+        }
+    } catch {
+        Write-Host 'WinSlim needs administrator rights and the prompt was cancelled.' -ForegroundColor Yellow
+    }
+    return
 }
 
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
@@ -85,8 +107,9 @@ public class TweakVM : INotifyPropertyChanged
 }
 
 # ---------------------------------------------------------------- logging
-$script:LogDir = Join-Path $PSScriptRoot 'logs'
-if (-not (Test-Path $script:LogDir)) { New-Item -ItemType Directory -Path $script:LogDir | Out-Null }
+$script:BaseDir = if ($PSScriptRoot) { $PSScriptRoot } else { Join-Path $env:LOCALAPPDATA 'WinSlim' }
+$script:LogDir  = Join-Path $script:BaseDir 'logs'
+if (-not (Test-Path $script:LogDir)) { New-Item -ItemType Directory -Path $script:LogDir -Force | Out-Null }
 $script:LogFile = Join-Path $script:LogDir ("winslim-{0}.log" -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $script:IsDry   = [bool]$DryRun
 $script:ui      = @{}
@@ -483,7 +506,7 @@ function Invoke-Selection {
 if ($NoGui) {
     Write-Log "WinSlim $script:Version (no GUI) - applying recommended items"
     Invoke-Selection -Items ($script:Tweaks | Where-Object { $_.Recommended }) -Undo $false -MakeRestorePoint $true
-    exit
+    return
 }
 
 # ---------------------------------------------------------------- XAML
