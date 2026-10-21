@@ -1,9 +1,13 @@
 # WinSlim
 
-A small, transparent **Windows 11 debloater** with a checkbox GUI. No downloads, no black boxes: everything it does is listed in [`WinSlim.ps1`](WinSlim.ps1).
+A small, transparent **Windows 11 debloater** with a modern animated GUI. No downloads, no black boxes: everything it does is listed in [`WinSlim.ps1`](WinSlim.ps1).
 
 ## Features
 
+- **Smooth WPF interface**: animated toggle switches, page transitions and a live progress bar
+- **Helps you decide**: click any option to see what it does, why you might want it, who should skip it, a Low/Medium risk badge, and the exact registry or app change
+- **Start profiles**: Light touch, Recommended, Privacy first, Maximum. Pick one, then fine-tune
+- Search across all options
 - Remove preinstalled apps (News, Teams, Clipchamp, Candy Crush, Phone Link, and so on)
 - Turn off telemetry, advertising ID, activity history, Recall, Copilot and Start menu ads
 - Taskbar and Explorer tweaks (classic right-click menu, file extensions, no Widgets or Chat)
@@ -16,8 +20,9 @@ A small, transparent **Windows 11 debloater** with a checkbox GUI. No downloads,
 
 1. Download the latest zip from the [Releases](../../releases) page and extract it.
 2. Double-click `Run.bat` (accept the admin prompt).
-3. Review the checkboxes, tick **Dry run** if you want a preview, then click **Apply**.
-4. Restart Windows.
+3. On **Start here**, pick a profile (or browse the option pages yourself). Click any option to read its details.
+4. Open **Review and apply**, turn on **Dry run** if you want a preview, then click **Apply selected**.
+5. Restart Windows.
 
 Or from PowerShell:
 
@@ -44,10 +49,11 @@ Microsoft Store, Photos, Calculator, Notepad, Terminal, Edge, Windows Security, 
 
 ## Adding your own tweaks
 
-Open `WinSlim.ps1` and add a line in the catalogue section:
+Open `WinSlim.ps1` and add an entry in the catalogue section:
 
 ```powershell
-Add-Tweak 'Privacy' 'My tweak' 'What it does' $true 'Reg' @(
+# Category, Name, What it does, Why you might want it, Skip it if..., Recommended, Risk, Kind, Data
+Add-Tweak 'Privacy' 'My tweak' 'What it does' 'Why it helps' 'you need X.' $true 'Low' 'Reg' @(
     (New-RegEntry 'HKCU:\Software\Example' 'SomeValue' 0 1)   # path, name, apply value, undo value
 )
 ```
@@ -58,7 +64,7 @@ Kinds: `Reg`, `Service`, `Apps`.
 
 ```powershell
 Install-Module ps2exe -Scope CurrentUser
-Invoke-ps2exe .\WinSlim.ps1 .\WinSlim.exe -requireAdmin -noConsole
+Invoke-ps2exe .\WinSlim.ps1 .\WinSlim.exe -requireAdmin -noConsole -STA
 ```
 
 ## Publishing a release
