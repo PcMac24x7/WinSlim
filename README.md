@@ -21,7 +21,7 @@ A small, transparent **Windows 11 debloater** with a modern animated GUI. No dow
 Open **PowerShell** (Start menu > type `PowerShell` > Enter) and paste:
 
 ```powershell
-irm https://raw.githubusercontent.com/YOUR-USERNAME/WinSlim/main/WinSlim.ps1 | iex
+irm https://raw.githubusercontent.com/PcMac24x7/WinSlim/main/WinSlim.ps1 | iex
 ```
 
 Accept the administrator (UAC) prompt and the WinSlim window opens. Nothing is changed until you review your choices and click **Apply selected**.
@@ -36,7 +36,7 @@ Accept the administrator (UAC) prompt and the WinSlim window opens. Nothing is c
 
 ```powershell
 # Preview only, no GUI, applies the recommended set as a dry run
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/YOUR-USERNAME/WinSlim/main/WinSlim.ps1))) -NoGui -DryRun
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/PcMac24x7/WinSlim/main/WinSlim.ps1))) -NoGui -DryRun
 
 # From a downloaded release: extract the zip, then double-click Run.bat, or:
 .\WinSlim.ps1

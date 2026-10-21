@@ -16,7 +16,7 @@
       -DryRun  Only log what would be done (the GUI has its own toggle).
 
 .EXAMPLE
-    irm https://raw.githubusercontent.com/YOUR-USERNAME/WinSlim/main/WinSlim.ps1 | iex
+    irm https://raw.githubusercontent.com/PcMac24x7/WinSlim/main/WinSlim.ps1 | iex
 
 .EXAMPLE
     .\WinSlim.ps1
@@ -27,7 +27,7 @@
 
 $script:Version = '2.1.0'
 # Raw URL of this file on GitHub (used when the script is launched with:  irm <url> | iex )
-$script:RawUrl  = 'https://raw.githubusercontent.com/YOUR-USERNAME/WinSlim/main/WinSlim.ps1'
+$script:RawUrl  = 'https://raw.githubusercontent.com/PcMac24x7/WinSlim/main/WinSlim.ps1'
 
 $NoGui  = [bool]($args -contains '-NoGui')
 $DryRun = [bool]($args -contains '-DryRun')
